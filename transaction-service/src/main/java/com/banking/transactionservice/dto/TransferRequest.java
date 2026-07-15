@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionRequest {
+public class TransferRequest {
     @NotBlank(message = "Sender account number is required")
     private String senderAccountNumber;
 
