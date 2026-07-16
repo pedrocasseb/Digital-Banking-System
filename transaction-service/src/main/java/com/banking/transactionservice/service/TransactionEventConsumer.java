@@ -6,6 +6,7 @@ import com.banking.transactionservice.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TransactionEventConsumer {
     private final TransactionRepository transactionRepository;
+    private final TransactionService transactionService;
     private final RedisTemplate<String, String> redisTemplate;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -64,6 +66,18 @@ public class TransactionEventConsumer {
 
         } catch (Exception e) {
             log.error("Error handling varification required: {}", e.getMessage());
+        }
+    }
+
+    @KafkaListener(topics = "fraud.check.clean")
+    public void consumeFraudCheckCleanResult(
+            @Payload Map<String, Object> payload
+    ) {
+        try {
+            String transactionId = (String) payload.get("transactionId");
+            transactionService.processCleanResult(transactionId);
+        } catch (Exception e) {
+            log.error("Error processing fraud check result: {}", e.getMessage());
         }
     }
 }
